@@ -1,0 +1,52 @@
+#include <SPI.h>
+
+#include <UIPEthernet.h>
+
+#include <PubSubClient.h>
+
+int pino2 = 2;
+bool estado_sensor;
+bool mensagem;
+
+byte mac[] = { 0x48, 0xF9, 0x61, 0xC8, 0xE5, 0x81 };
+
+EthernetClient client;
+
+PubSubClient mqttClient(client);
+
+
+void setup() {
+ pinMode(pino2,INPUT_PULLUP);
+ Serial.begin(9600);
+ Ethernet.begin(mac);
+ mqttClient.setServer("54.173.148.114", 1883);
+
+ Serial.print("O IP do Arduino e: ");
+ Serial.println(Ethernet.localIP());
+
+ Serial.print("A Mascara de Rede do Arduino e: ");
+ Serial.println(Ethernet.subnetMask());
+
+ Serial.print("O Gateway do Arduino e: ");
+ Serial.println(Ethernet.gatewayIP());
+ Serial.println("");
+
+}
+
+void loop() {
+
+  mqttClient.connect("lucassipriano");
+  
+  estado_sensor = digitalRead(pino2);
+
+  if (estado_sensor == 0){
+    Serial.println("Fechado");
+    mensagem = mqttClient.publish("lucassipriano-t", "Fechado");
+
+  }else {
+    Serial.println("Aberto"); 
+    mensagem = mqttClient.publish("lucassipriano-t", "Aberto");
+  }
+
+   mqttClient.loop();
+  }
